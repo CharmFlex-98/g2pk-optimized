@@ -18,7 +18,7 @@ except LookupError:
 
 from g2pk.special import jyeo, ye, consonant_ui, josa_ui, vowel_ui, jamo, rieulgiyeok, rieulbieub, verb_nieun, balb, palatalize, modifying_rieul
 from g2pk.regular import link1, link2, link3, link4
-from g2pk.utils import annotate, compose, group, gloss, parse_table, get_rule_id2text
+from g2pk.utils import annotate, compose, group, gloss, parse_table, get_rule_id2text, _extract_word_changes
 from g2pk.english import convert_eng
 from g2pk.numerals import convert_num
 
@@ -65,11 +65,12 @@ class G2p(object):
                 str1, str2 = line.split("===")
                 _out = re.sub(str1, str2, out)
                 if applied_rules is not None and _out != out and current_rule_id is not None:
-                    applied_rules.append({
-                        "rule_id": current_rule_id,
-                        "before": out,
-                        "after": _out,
-                    })
+                    for before_word, after_word in _extract_word_changes(out, _out):
+                        applied_rules.append({
+                            "rule_id": current_rule_id,
+                            "before": before_word,
+                            "after": after_word,
+                        })
                 out = _out
 
         return out

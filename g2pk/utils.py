@@ -256,15 +256,59 @@ def get_rule_id2text():
     return rule_id2text
 
 
+def _strip_common_affixes(before, after):
+    '''Strip common prefix and suffix characters, returning just the changed core.
+    Falls back to (before, after) if stripping would leave an empty string.
+    '''
+    i = 0
+    while i < len(before) and i < len(after) and before[i] == after[i]:
+        i += 1
+    j = 0
+    while j < len(before) - i and j < len(after) - i and before[-(j+1)] == after[-(j+1)]:
+        j += 1
+    before_core = before[i: len(before) - j if j else len(before)]
+    after_core = after[i: len(after) - j if j else len(after)]
+    if not before_core or not after_core:
+        return before, after
+    return before_core, after_core
+
+
+def _extract_word_changes(before, after):
+    '''Find changed phrases between two sentence strings.
+    Groups contiguous changed tokens into one phrase, then strips
+    common prefix/suffix characters to expose the changed core.
+    Falls back to [(before, after)] if word count changes.
+    '''
+    before_words = before.split(" ")
+    after_words = after.split(" ")
+    if len(before_words) != len(after_words):
+        return [_strip_common_affixes(before, after)]
+    changes = []
+    i = 0
+    while i < len(before_words):
+        if before_words[i] != after_words[i]:
+            j = i + 1
+            while j < len(before_words) and before_words[j] != after_words[j]:
+                j += 1
+            before_phrase = " ".join(before_words[i:j])
+            after_phrase = " ".join(after_words[i:j])
+            changes.append(_strip_common_affixes(before_phrase, after_phrase))
+            i = j
+        else:
+            i += 1
+    return changes
+
+
 def gloss(verbose, out, inp, rule_id, applied_rules=None):
     '''displays the process and relevant information'''
     if verbose and out != inp and out != re.sub("/[EJPB]", "", inp):
         if applied_rules is not None:
-            applied_rules.append({
-                "rule_id": rule_id,
-                "before": compose(inp),
-                "after": compose(out),
-            })
+            for before_word, after_word in _extract_word_changes(compose(inp), compose(out)):
+                applied_rules.append({
+                    "rule_id": rule_id,
+                    "before": before_word,
+                    "after": after_word,
+                })
 
 
 
