@@ -33,9 +33,9 @@ class G2p(object):
         self.rule2text = get_rule_id2text() # for comments of main rules
         self.idioms_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "idioms.txt")
 
-    def get_mecab(self):
+    def get_mecab(self, path):
         try:
-            return mecab.MeCab()
+            return mecab.MeCab(dictionary_path='/usr/local/lib/mecab/dic/mecab-ko-dic')
         except Exception as e:
             raise Exception(
                 'If you want to install mecab, The command is... pip install python-mecab-ko'
