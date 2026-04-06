@@ -6,7 +6,6 @@ with open("README.md", mode="r", encoding="utf-8") as fh:
 REQUIRED_PACKAGES = [
     'jamo',
     'nltk',
-    'konlpy',
     'python-mecab-ko',
 ]
 
