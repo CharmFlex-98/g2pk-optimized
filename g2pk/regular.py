@@ -3,12 +3,10 @@
 https://github.com/kyubyong/g2pK
 '''
 
-from g2pk.utils import gloss, get_rule_id2text
-rule_id2text = get_rule_id2text()
+from g2pk.utils import gloss
 
 
-def link1(inp, descriptive=False, verbose=False):
-    rule = rule_id2text["13"]
+def link1(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
 
     pairs = [ ("ᆨᄋ", "ᄀ"),
@@ -28,12 +26,11 @@ def link1(inp, descriptive=False, verbose=False):
     for str1, str2 in pairs:
         out = out.replace(str1, str2)
 
-    gloss(verbose, out, inp, rule)
+    gloss(verbose, out, inp, "13", applied_rules)
     return out
 
 
-def link2(inp, descriptive=False, verbose=False):
-    rule = rule_id2text["14"]
+def link2(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
 
     pairs = [ ("ᆪᄋ", "ᆨᄊ"),
@@ -48,12 +45,11 @@ def link2(inp, descriptive=False, verbose=False):
     for str1, str2 in pairs:
         out = out.replace(str1, str2)
 
-    gloss(verbose, out, inp, rule)
+    gloss(verbose, out, inp, "14", applied_rules)
     return out
 
 
-def link3(inp, descriptive=False, verbose=False):
-    rule = rule_id2text["15"]
+def link3(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
 
     pairs = [ ("ᆨ ᄋ", " ᄀ"),
@@ -84,13 +80,11 @@ def link3(inp, descriptive=False, verbose=False):
     for str1, str2 in pairs:
         out = out.replace(str1, str2)
 
-    gloss(verbose, out, inp, rule)
+    gloss(verbose, out, inp, "15", applied_rules)
     return out
 
 
-def link4(inp, descriptive=False, verbose=False):
-    rule = rule_id2text["12.4"]
-
+def link4(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
 
     pairs = [ ("ᇂᄋ", "ᄋ"),
@@ -100,6 +94,5 @@ def link4(inp, descriptive=False, verbose=False):
     for str1, str2 in pairs:
         out = out.replace(str1, str2)
 
-    gloss(verbose, out, inp, rule)
+    gloss(verbose, out, inp, "12.4", applied_rules)
     return out
-

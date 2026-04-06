@@ -256,11 +256,15 @@ def get_rule_id2text():
     return rule_id2text
 
 
-def gloss(verbose, out, inp, rule):
+def gloss(verbose, out, inp, rule_id, applied_rules=None):
     '''displays the process and relevant information'''
     if verbose and out != inp and out != re.sub("/[EJPB]", "", inp):
-        print(compose(inp), "->", compose(out))
-        print("\033[1;31m", rule, "\033[0m")
+        if applied_rules is not None:
+            applied_rules.append({
+                "rule_id": rule_id,
+                "before": compose(inp),
+                "after": compose(out),
+            })
 
 
 

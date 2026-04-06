@@ -52,7 +52,6 @@ class G2p(object):
         >>> idioms("지금 mp3 파일을 다운받고 있어요")
         지금 엠피쓰리 파일을 다운받고 있어요
         '''
-        rule = "from idioms.txt"
         out = string
 
         for line in open(self.idioms_path, 'r', encoding="utf8"):
@@ -60,7 +59,6 @@ class G2p(object):
             if "===" in line:
                 str1, str2 = line.split("===")
                 out = re.sub(str1, str2, out)
-        gloss(verbose, out, string, rule)
 
         return out
 
@@ -68,7 +66,8 @@ class G2p(object):
         '''Main function
         string: input string
         descriptive: boolean.
-        verbose: boolean
+        verbose: boolean. If True, returns (output, applied_rules) where applied_rules is a list
+                 of dicts with keys: rule_id, before, after.
         group_vowels: boolean. If True, the vowels of the identical sound are normalized.
         to_syl: boolean. If True, hangul letters or jamo are assembled to form syllables.
 
@@ -86,11 +85,13 @@ class G2p(object):
         -> 나의/J 친구가 엠피쓰리 파일 세개/B를 다운받고 있다
 
         STEP 5. decompose
-        -> 나의/J 친구가 엠피쓰리 파일 세개/B를 다운받고 있다
+        -> 나의/J 친구가 엠피쓰리 파일 세개/B를 다운받고 있다
 
         STEP 6-9. Hangul
         -> 나의 친구가 엠피쓰리 파일 세개를 다운받꼬 읻따
         '''
+        applied_rules = [] if verbose else None
+
         # 1. idioms
         string = self.idioms(string, descriptive, verbose)
 
@@ -110,7 +111,7 @@ class G2p(object):
         for func in (jyeo, ye, consonant_ui, josa_ui, vowel_ui, \
                      jamo, rieulgiyeok, rieulbieub, verb_nieun, \
                      balb, palatalize, modifying_rieul):
-            inp = func(inp, descriptive, verbose)
+            inp = func(inp, descriptive, verbose, applied_rules)
         inp = re.sub("/[PJEB]", "", inp)
 
         # 7. regular table: batchim + onset
@@ -118,15 +119,12 @@ class G2p(object):
             _inp = inp
             inp = re.sub(str1, str2, inp)
 
-            if len(rule_ids)>0:
-                rule = "\n".join(self.rule2text.get(rule_id, "") for rule_id in rule_ids)
-            else:
-                rule = ""
-            gloss(verbose, inp, _inp, rule)
+            for rule_id in rule_ids:
+                gloss(verbose, inp, _inp, rule_id, applied_rules)
 
         # 8 link
         for func in (link1, link2, link3, link4):
-            inp = func(inp, descriptive, verbose)
+            inp = func(inp, descriptive, verbose, applied_rules)
 
         # 9. postprocessing
         if group_vowels:
@@ -134,6 +132,9 @@ class G2p(object):
 
         if to_syl:
             inp = compose(inp)
+
+        if verbose:
+            return inp, applied_rules
         return inp
 
 if __name__ == "__main__":
