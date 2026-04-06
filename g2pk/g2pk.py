@@ -41,7 +41,7 @@ class G2p(object):
                 'If you want to install mecab, The command is... pip install python-mecab-ko'
             )
 
-    def idioms(self, string, descriptive=False, verbose=False):
+    def idioms(self, string, descriptive=False, verbose=False, applied_rules=None):
         '''Process each line in `idioms.txt`
         Each line is delimited by "===",
         and the left string is replaced by the right one.
@@ -52,13 +52,25 @@ class G2p(object):
         >>> idioms("지금 mp3 파일을 다운받고 있어요")
         지금 엠피쓰리 파일을 다운받고 있어요
         '''
+        current_rule_id = None
         out = string
 
-        for line in open(self.idioms_path, 'r', encoding="utf8"):
-            line = line.split("#")[0].strip()
+        for raw_line in open(self.idioms_path, 'r', encoding="utf8"):
+            raw_line = raw_line.strip()
+            if raw_line.startswith("# rule:"):
+                current_rule_id = raw_line[len("# rule:"):].strip()
+                continue
+            line = raw_line.split("#")[0].strip()
             if "===" in line:
                 str1, str2 = line.split("===")
-                out = re.sub(str1, str2, out)
+                _out = re.sub(str1, str2, out)
+                if applied_rules is not None and _out != out and current_rule_id is not None:
+                    applied_rules.append({
+                        "rule_id": current_rule_id,
+                        "before": out,
+                        "after": _out,
+                    })
+                out = _out
 
         return out
 
@@ -93,7 +105,7 @@ class G2p(object):
         applied_rules = [] if verbose else None
 
         # 1. idioms
-        string = self.idioms(string, descriptive, verbose)
+        string = self.idioms(string, descriptive, verbose, applied_rules)
 
         # 2 English to Hangul
         string = convert_eng(string, self.cmu)
