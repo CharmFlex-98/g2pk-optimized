@@ -274,15 +274,27 @@ def _strip_common_affixes(before, after):
 
 
 def _extract_word_changes(before, after):
-    '''Find individual changed words between two sentence strings.
-    Returns one (before_word, after_word) pair per changed position.
+    '''Find changed word spans between two sentence strings.
+    Groups contiguous changed tokens into one phrase to preserve
+    cross-boundary phonological context (e.g. liaison).
     Falls back to [(before, after)] if word count changes.
     '''
     before_words = before.split(" ")
     after_words = after.split(" ")
     if len(before_words) != len(after_words):
         return [(before, after)]
-    return [(b, a) for b, a in zip(before_words, after_words) if b != a]
+    changes = []
+    i = 0
+    while i < len(before_words):
+        if before_words[i] != after_words[i]:
+            j = i + 1
+            while j < len(before_words) and before_words[j] != after_words[j]:
+                j += 1
+            changes.append((" ".join(before_words[i:j]), " ".join(after_words[i:j])))
+            i = j
+        else:
+            i += 1
+    return changes
 
 
 def gloss(verbose, out, inp, rule_id, applied_rules=None):
