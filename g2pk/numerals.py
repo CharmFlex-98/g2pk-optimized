@@ -4,6 +4,7 @@ https://github.com/kyubyong/g2pK
 '''
 
 import re
+from g2pk.utils import _extract_word_changes
 
 # This is a list of bound nouns preceded by pure Korean numerals.
 BOUND_NOUNS = "군데 권 개 그루 닢 대 두 마리 모 모금 뭇 발 발짝 방 번 벌 보루 살 수 술 시 쌈 움큼 정 짝 채 척 첩 축 켤레 톨 통"
@@ -99,12 +100,13 @@ def process_num(num, sino=True):
     return "".join(elem for elem in spelledout)
 
 
-def convert_num(string):
+def convert_num(string, applied_rules=None):
     '''Convert a annotated string such that arabic numerals inside are spelled out.
     >>> convert_num("우리 3시/B 10분/B에 만나자.")
     우리 세시/B 십분/B에 만나자.
     '''
     global BOUND_NOUNS
+    before_string = string
 
     # Bound Nouns
     tokens = set(re.findall("([\d][\d,]*)([ㄱ-힣]+)/B", string))
@@ -121,6 +123,16 @@ def convert_num(string):
     names = "영일이삼사오육칠팔구"
     for d, n in zip(digits, names):
         string = string.replace(d, n)
+
+    if applied_rules is not None and string != before_string:
+        clean_before = re.sub(r"/[PJEB]", "", before_string)
+        clean_after = re.sub(r"/[PJEB]", "", string)
+        for before_word, after_word in _extract_word_changes(clean_before, clean_after):
+            applied_rules.append({
+                "rule_id": "num_to_hangul",
+                "before": before_word,
+                "after": after_word,
+            })
 
     return string
 

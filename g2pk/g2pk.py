@@ -109,13 +109,13 @@ class G2p(object):
         string = self.idioms(string, descriptive, verbose, applied_rules)
 
         # 2 English to Hangul
-        string = convert_eng(string, self.cmu)
+        string = convert_eng(string, self.cmu, applied_rules)
 
         # 3. annotate
         string = annotate(string, self.mecab)
 
         # 4. Spell out arabic numbers
-        string = convert_num(string)
+        string = convert_num(string, applied_rules)
 
         # 5. decompose
         inp = h2j(string)

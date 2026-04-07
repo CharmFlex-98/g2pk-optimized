@@ -9,7 +9,7 @@ import re
 from g2pk.utils import adjust, compose, to_choseong, to_jungseong, to_jongseong, reconstruct
 
 
-def convert_eng(string, cmu):
+def convert_eng(string, cmu, applied_rules=None):
     '''Convert a string such that English words inside are turned into Hangul.
     string: input string.
     cmu: cmu dict object.
@@ -142,6 +142,12 @@ def convert_eng(string, cmu):
         ret = reconstruct(ret)
         ret = compose(ret)
         ret = re.sub("[\u1100-\u11FF]", "", ret) # remove hangul jamo
+        if applied_rules is not None and eng_word != ret:
+            applied_rules.append({
+                "rule_id": "eng_to_hangul",
+                "before": eng_word,
+                "after": ret,
+            })
         string = string.replace(eng_word, ret)
     return string
 
