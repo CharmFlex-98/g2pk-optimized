@@ -301,7 +301,9 @@ def gloss(verbose, out, inp, rule_id, applied_rules=None):
     '''displays the process and relevant information'''
     if verbose and out != inp and out != re.sub("/[EJPB]", "", inp):
         if applied_rules is not None:
-            for before_word, after_word in _extract_word_changes(compose(inp), compose(out)):
+            clean_inp = re.sub("/[EJPB]", "", inp)
+            clean_out = re.sub("/[EJPB]", "", out)
+            for before_word, after_word in _extract_word_changes(compose(clean_inp), compose(clean_out)):
                 applied_rules.append({
                     "rule_id": rule_id,
                     "before": before_word,
