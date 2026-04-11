@@ -127,11 +127,12 @@ def convert_num(string, applied_rules=None):
     if applied_rules is not None and string != before_string:
         clean_before = re.sub(r"/[PJEB]", "", before_string)
         clean_after = re.sub(r"/[PJEB]", "", string)
-        for before_word, after_word in _extract_word_changes(clean_before, clean_after):
+        for before_word, after_word, indices in _extract_word_changes(clean_before, clean_after):
             applied_rules.append({
                 "rule_id": "num_to_hangul",
                 "before": before_word,
                 "after": after_word,
+                "word_indices": indices,
             })
 
     return string

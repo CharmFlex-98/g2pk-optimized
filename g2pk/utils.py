@@ -274,26 +274,19 @@ def _strip_common_affixes(before, after):
 
 
 def _extract_word_changes(before, after):
-    '''Find changed word spans between two sentence strings.
-    Groups contiguous changed tokens into one phrase to preserve
-    cross-boundary phonological context (e.g. liaison).
-    Falls back to [(before, after)] if word count changes.
+    '''Compare two strings word-by-word and return per-word diffs.
+    Returns: list of (before_word, after_word, [word_index])
+    Each changed word is its own entry — no grouping of adjacent changes.
+    Falls back to [(before, after, all_indices)] if word count changes.
     '''
     before_words = before.split(" ")
     after_words = after.split(" ")
     if len(before_words) != len(after_words):
-        return [(before, after)]
+        return [(before, after, list(range(len(before_words))))]
     changes = []
-    i = 0
-    while i < len(before_words):
+    for i in range(len(before_words)):
         if before_words[i] != after_words[i]:
-            j = i + 1
-            while j < len(before_words) and before_words[j] != after_words[j]:
-                j += 1
-            changes.append((" ".join(before_words[i:j]), " ".join(after_words[i:j])))
-            i = j
-        else:
-            i += 1
+            changes.append((before_words[i], after_words[i], [i]))
     return changes
 
 
@@ -303,11 +296,12 @@ def gloss(verbose, out, inp, rule_id, applied_rules=None):
         if applied_rules is not None:
             clean_inp = re.sub("/[EJPB]", "", inp)
             clean_out = re.sub("/[EJPB]", "", out)
-            for before_word, after_word in _extract_word_changes(compose(clean_inp), compose(clean_out)):
+            for before_word, after_word, indices in _extract_word_changes(compose(clean_inp), compose(clean_out)):
                 applied_rules.append({
                     "rule_id": rule_id,
                     "before": before_word,
                     "after": after_word,
+                    "word_indices": indices,
                 })
 
 

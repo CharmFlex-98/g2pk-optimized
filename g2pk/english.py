@@ -143,10 +143,14 @@ def convert_eng(string, cmu, applied_rules=None):
         ret = compose(ret)
         ret = re.sub("[\u1100-\u11FF]", "", ret) # remove hangul jamo
         if applied_rules is not None and eng_word != ret:
+            # Find word indices before replacement — use exact token match within each space-separated word
+            words = string.split()
+            word_indices = [i for i, w in enumerate(words) if eng_word in re.findall("[A-Za-z']+", w)]
             applied_rules.append({
                 "rule_id": "eng_to_hangul",
                 "before": eng_word,
                 "after": ret,
+                "word_indices": word_indices,
             })
         string = string.replace(eng_word, ret)
     return string

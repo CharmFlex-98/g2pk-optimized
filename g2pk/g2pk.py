@@ -65,11 +65,12 @@ class G2p(object):
                 str1, str2 = line.split("===")
                 _out = re.sub(str1, str2, out)
                 if applied_rules is not None and _out != out and current_rule_id is not None:
-                    for before_word, after_word in _extract_word_changes(out, _out):
+                    for before_word, after_word, indices in _extract_word_changes(out, _out):
                         applied_rules.append({
                             "rule_id": current_rule_id,
                             "before": before_word,
                             "after": after_word,
+                            "word_indices": indices,
                         })
                 out = _out
 
@@ -104,6 +105,7 @@ class G2p(object):
         -> 나의 친구가 엠피쓰리 파일 세개를 다운받꼬 읻따
         '''
         applied_rules = [] if verbose else None
+        original_words = string.split() if verbose else None
 
         # 1. idioms
         string = self.idioms(string, descriptive, verbose, applied_rules)
@@ -147,7 +149,7 @@ class G2p(object):
             inp = compose(inp)
 
         if verbose:
-            return inp, applied_rules
+            return inp, applied_rules, original_words
         return inp
 
 if __name__ == "__main__":
