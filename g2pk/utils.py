@@ -183,6 +183,7 @@ def annotate(string, mecab):
         tag_seq = tag_seq[:i] + " " + tag_seq[i:]
 
     annotated = ""
+
     for char, tag in zip(string, tag_seq):
         annotated += char
         if char == "의" and tag == "J":
@@ -303,6 +304,90 @@ def gloss(verbose, out, inp, rule_id, applied_rules=None):
                     "after": after_word,
                     "word_indices": indices,
                 })
+
+
+_N_INSERTION_EXCEPTIONS = frozenset({'6·25', '3·1절', '송별연', '등용문'})
+_YIOTIZED_VOWELS = frozenset({'\u1175', '\u1163', '\u1167', '\u116d', '\u1172'})  # ᅵᅣᅧᅭᅲ
+_JONGSEONG_START = '\u11a8'  # ᆨ
+_JONGSEONG_END = '\u11c2'    # ᇂ
+_NULL_ONSET = '\u110b'       # ᄋ
+_RIEUL_JONGSEONG = '\u11af'  # ᆯ
+_NIEUN_ONSET = '\u1102'      # ᄂ
+_RIEUL_ONSET = '\u1105'      # ᄅ
+
+
+def n_insertion(string, mecab_inst, verbose=False, applied_rules=None):
+    '''Rule 29: ᄂ insertion at compound boundaries.
+    Runs on the surface string before h2j decomposition.
+    When first morpheme ends in a consonant and second starts with 이/야/여/요/유,
+    insert ᄂ (or ᄅ for ᆯ-final first morpheme, per 붙임1).
+    '''
+    out = string
+    # cursor tracks position in the original string; since ᄋ→ᄂ/ᄅ never changes
+    # syllable count, positions in `out` stay aligned with `string` throughout.
+    cursor = 0
+
+    for morph in mecab_inst.parse(string):
+        pos = string.find(morph.surface, cursor)
+        if pos == -1:
+            continue
+        cursor = pos + len(morph.surface)
+
+        if morph.feature.type != 'Compound':
+            continue
+        expression = morph.feature.expression
+        if not expression or '+' not in expression:
+            continue
+        if morph.surface in _N_INSERTION_EXCEPTIONS:
+            continue
+
+        parts = expression.split('+')
+        first_surf = parts[0].split('/')[0]
+        second_surf = parts[1].split('/')[0]
+
+        first_jamo = h2j(first_surf)
+        second_jamo = h2j(second_surf)
+
+        if not first_jamo or len(second_jamo) < 2:
+            continue
+
+        last_char = first_jamo[-1]
+        if not (_JONGSEONG_START <= last_char <= _JONGSEONG_END):
+            continue
+
+        if second_jamo[0] != _NULL_ONSET:
+            continue
+        if second_jamo[1] not in _YIOTIZED_VOWELS:
+            continue
+
+        new_onset = _RIEUL_ONSET if last_char == _RIEUL_JONGSEONG else _NIEUN_ONSET
+        new_jamo = first_jamo + new_onset + second_jamo[1:]
+        new_surf = compose(new_jamo)
+
+        # Replace at exact position (len(new_surf) == len(morph.surface) always)
+        out = out[:pos] + new_surf + out[pos + len(morph.surface):]
+
+    gloss(verbose, out, string, "29", applied_rules)
+    return out
+
+
+def getCompoundToken(string, mecab):
+    tokens = []
+
+    for morph in mecab.parse(string):
+        tokenType = morph.feature.type
+        expression = morph.feature.expression 
+
+        if tokenType == 'Compound' and '+' in expression:
+            for part in expression.split('+'):
+                surface = part.split('/')[0]
+                pos = part.split('/')[1]
+                tokens.append((surface, pos, True))
+
+        else:
+            tokens.append((morph.surface, morph.feature.pos, False))
+
+    return tokens
 
 
 

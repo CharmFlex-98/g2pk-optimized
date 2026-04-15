@@ -18,7 +18,7 @@ except LookupError:
 
 from g2pk.special import jyeo, ye, consonant_ui, josa_ui, vowel_ui, jamo, rieulgiyeok, rieulbieub, verb_nieun, balb, palatalize, modifying_rieul
 from g2pk.regular import link1, link2, link3, link4
-from g2pk.utils import annotate, compose, group, gloss, parse_table, get_rule_id2text, _extract_word_changes
+from g2pk.utils import annotate, compose, group, gloss, parse_table, get_rule_id2text, _extract_word_changes, n_insertion
 from g2pk.english import convert_eng
 from g2pk.numerals import convert_num
 
@@ -112,6 +112,9 @@ class G2p(object):
 
         # 2 English to Hangul
         string = convert_eng(string, self.cmu, applied_rules)
+
+        # 2.5. ᄂ insertion (Rule 29) — must run on clean string before annotation
+        string = n_insertion(string, self.mecab, verbose, applied_rules)
 
         # 3. annotate
         string = annotate(string, self.mecab)
