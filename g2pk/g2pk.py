@@ -132,13 +132,19 @@ class G2p(object):
             inp = func(inp, descriptive, verbose, applied_rules)
         inp = re.sub("/[PJEB]", "", inp)
 
-        # 7. regular table: batchim + onset
-        for str1, str2, rule_ids in self.table:
-            _inp = inp
-            inp = re.sub(str1, str2, inp)
-
-            for rule_id in rule_ids:
-                gloss(verbose, inp, _inp, rule_id, applied_rules)
+        # 7. regular table: batchim + onset (iterate until stable)
+        max_passes = 10
+        changed = True
+        while changed and max_passes > 0:
+            changed = False
+            max_passes -= 1
+            for str1, str2, rule_ids in self.table:
+                _inp = inp
+                inp = re.sub(str1, str2, inp)
+                if inp != _inp:
+                    changed = True
+                    for rule_id in rule_ids:
+                        gloss(verbose, inp, _inp, rule_id, applied_rules)
 
         # 8 link
         for func in (link1, link2, link3, link4):
