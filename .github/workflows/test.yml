@@ -1,0 +1,79 @@
+name: Tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y automake curl build-essential
+
+      - name: Cache mecab binaries
+        id: cache-mecab
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/lib/mecab
+          key: mecab-ko-0.996-ko-0.9.2-dic-2.1.1-20180720
+
+      - name: Build and install mecab-ko
+        if: steps.cache-mecab.outputs.cache-hit != 'true'
+        run: |
+          curl -Lo mecab-ko.tar.gz \
+            https://bitbucket.org/eunjeon/mecab-ko/downloads/mecab-0.996-ko-0.9.2.tar.gz
+          tar xzf mecab-ko.tar.gz
+          cd mecab-0.996-ko-0.9.2
+          cp /usr/share/misc/config.guess .
+          cp /usr/share/misc/config.sub .
+          ./configure --enable-utf8-only
+          make
+          sudo make install
+          cd ..
+          rm -rf mecab-ko.tar.gz mecab-0.996-ko-0.9.2
+
+      - name: Build and install mecab-ko-dic
+        if: steps.cache-mecab.outputs.cache-hit != 'true'
+        run: |
+          curl -Lo mecab-ko-dic.tar.gz \
+            https://bitbucket.org/eunjeon/mecab-ko-dic/downloads/mecab-ko-dic-2.1.1-20180720.tar.gz
+          tar xzf mecab-ko-dic.tar.gz
+          cd mecab-ko-dic-2.1.1-20180720
+          cp /usr/share/misc/config.guess .
+          cp /usr/share/misc/config.sub .
+          ./autogen.sh
+          ./configure
+          make
+          sudo make install
+          cd ..
+          rm -rf mecab-ko-dic.tar.gz mecab-ko-dic-2.1.1-20180720
+
+      - name: Refresh shared library cache
+        run: sudo ldconfig
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            nltk==3.8.1 \
+            mecab-ko==1.0.0 \
+            mecab-python==1.0.0 \
+            python-mecab-ko==1.3.7
+          pip install -e .
+          pip install pytest
+
+      - name: Run tests
+        run: pytest tests/ -v
