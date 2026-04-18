@@ -57,18 +57,36 @@ def link3(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
 
     pairs = [
-        ('ᆨ/C ᄋ', ' ᄀ'),  # cross-space liaison
+        # cross-space liaison — representative codas
+        ('ᆨ/C ᄋ', ' ᄀ'),
         ('ᆫ/C ᄋ', ' ᄂ'),
         ('ᆮ/C ᄋ', ' ᄃ'),
         ('ᆯ/C ᄋ', ' ᄅ'),
         ('ᆷ/C ᄋ', ' ᄆ'),
         ('ᆸ/C ᄋ', ' ᄇ'),
-        ('ᆨ/Cᄋ', 'ᄀ'),    # intra-word liaison (no space)
+        # cross-space liaison — non-representative codas (neutralize then liaise)
+        ('ᆩ/C ᄋ', ' ᄀ'),           # ᆩ→ᆨ→ᄀ
+        ('ᆺ/C ᄋ', ' ᄃ'),           # ᆺ→ᆮ→ᄃ
+        ('ᆻ/C ᄋ', ' ᄃ'),           # ᆻ→ᆮ→ᄃ
+        ('ᆽ/C ᄋ', ' ᄃ'),           # ᆽ→ᆮ→ᄃ
+        ('ᆾ/C ᄋ', ' ᄃ'),           # ᆾ→ᆮ→ᄃ
+        ('ᇀ/C ᄋ', ' ᄃ'),           # ᇀ→ᆮ→ᄃ
+        ('ᇂ/C ᄋ', ' ᄋ'),           # ᇂ drops, vowel takes null onset
+        # intra-word liaison (no space) — representative codas
+        ('ᆨ/Cᄋ', 'ᄀ'),
         ('ᆫ/Cᄋ', 'ᄂ'),
         ('ᆮ/Cᄋ', 'ᄃ'),
         ('ᆯ/Cᄋ', 'ᄅ'),
         ('ᆷ/Cᄋ', 'ᄆ'),
         ('ᆸ/Cᄋ', 'ᄇ'),
+        # intra-word liaison (no space) — non-representative codas
+        ('ᆩ/Cᄋ', 'ᄀ'),            # ᆩ→ᆨ→ᄀ
+        ('ᆺ/Cᄋ', 'ᄃ'),            # ᆺ→ᆮ→ᄃ
+        ('ᆻ/Cᄋ', 'ᄃ'),            # ᆻ→ᆮ→ᄃ
+        ('ᆽ/Cᄋ', 'ᄃ'),            # ᆽ→ᆮ→ᄃ  (e.g. 젖어미 → 저더미)
+        ('ᆾ/Cᄋ', 'ᄃ'),            # ᆾ→ᆮ→ᄃ
+        ('ᇀ/Cᄋ', 'ᄃ'),            # ᇀ→ᆮ→ᄃ
+        ('ᇂ/Cᄋ', 'ᄋ'),            # ᇂ drops, vowel takes null onset
     ]
     for str1, str2 in pairs:
         out = out.replace(str1, str2)

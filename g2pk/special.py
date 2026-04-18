@@ -131,7 +131,7 @@ def palatalize(inp, descriptive=False, verbose=False, applied_rules=None):
     out = re.sub("ᇀᄋ([ᅵᅣᅧᅭᅲ])", r"ᄎ\1", out)
     out = re.sub("ᆴᄋ([ᅵᅣᅧᅭᅲ])", r"ᆯᄎ\1", out)
 
-    out = re.sub("ᆮᄒ([ᅵ])", r"ᄎ\1", out)
+    out = re.sub("ᆮᄒ([ᅵᅣᅧᅭᅲ])", r"ᄎ\1", out)
 
     gloss(verbose, out, inp, "17", applied_rules)
     return out

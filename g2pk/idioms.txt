@@ -1,11 +1,28 @@
-# Each line should be considered prior to others.
-# Comments are preceded by #.
-# Each line should look like [str1]===[str2],
-# where str2 replaces str1.
-# Note that these will be processed through regular expression.
-# Rule sections are marked with # rule:<id>
+# idioms.txt — Pre-processing substitutions applied BEFORE phonological rules.
+# Processing order: entries are applied top-to-bottom; earlier entries take priority.
+# Format: str1===str2   (str1 is a Python regex pattern; str2 is the replacement)
+#
+# HOW TO ADD A NEW EXCEPTION:
+#   1. Find the section for the relevant rule number below.
+#   2. Add:  original_form===phonetic_form
+#   3. Both sides use composed Hangul; the pipeline handles further processing.
+#   4. If no rule applies, add to # rule:no_rule_only_memorise at the bottom.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# rule:15.lexical
+# Rule 15 — Liaison before content morphemes (실질형태소) — lexical exceptions.
+# MeCab treats some lexicalized compound predicates as a single token, hiding the
+# internal morpheme boundary. Add words here where the first morpheme ends in a
+# non-representative coda (ᆺ ᆽ ᆾ ᇀ ᇂ …) followed by a vowel-initial content
+# morpheme, causing incorrect direct liaison (Rule 13) instead of the correct
+# neutralize-then-liaise (Rule 15).
+# Example: 맛없다 — 맛(ᆺ)+없 → ᆺ neutralizes to ᆮ → ᄃ liaison → [마덥따]
+맛없===마덥
 
 # rule:20
+# Rule 20 — Sino-Korean ㄹ initial syllable → ㄴ after ᆫ·ᆯ coda (두음법칙 in compounds).
+# Add Sino-Korean compound words where the second element starts with ㄹ and the
+# first element ends with ᆫ or ᆯ.
 의견란===의견난
 임진란===임진난
 생산량===생산냥
@@ -19,6 +36,9 @@
 구근류===구근뉴
 
 # rule:26
+# Rule 26 — Fortis (된소리) after ᆯ in native-Korean compound nouns.
+# Add compound words where the onset of the second element tenses after a ᆯ-final
+# first element and the tensing is NOT predictable from the general rule.
 갈등===갈뜽
 발동===발똥
 절도===절또
@@ -31,7 +51,21 @@
 몰상식===몰쌍식
 불세출===불쎄출
 
+# rule:27
+# Rule 27 — Modifying ㄹ (관형사형 어미 -(으)ㄹ) fortis.
+# Add ~ㄹ + consonant-initial endings that require tensification.
+할걸===할껄
+할밖에===할빠께
+할세라===할쎄라
+할수록===할쑤록
+할지라도===할찌라도
+할지언정===할찌언정
+할진대===할찐대
+
 # rule:28
+# Rule 28 — Fortis in native compound nouns without 사이시옷 (no ㅅ in spelling).
+# Add compound nouns where the onset of the second element tenses but no saisiot
+# is written.
 문고리===문꼬리
 눈동자===눈똥자
 신바람===신빠람
@@ -52,7 +86,10 @@
 창살===창쌀
 강줄기===강쭐기
 
-# rule:29
+# rule:29.nieun
+# Rule 29 — ᄂ insertion: first morpheme ends in a consonant, second starts with
+# 이/야/여/요/유 (null onset + yiotized vowel) → ᄂ is inserted between them.
+# Add compound nouns or verb stems that undergo ᄂ insertion.
 솜이불===솜니불
 홑이불===홑니불
 막일===막닐
@@ -67,7 +104,10 @@
 담요===담뇨
 눈요기===눈뇨기
 
-# rule:29
+# rule:29.rieul
+# Rule 29 붙임1 — ᄅ insertion: same condition as 29.nieun but the first morpheme
+# ends in ᆯ, so the inserted ᄂ assimilates to ᄅ (ᆯ + ᄂ → ᆯ + ᄅ).
+# Also covers cases where ᄂ is inserted then assimilates leftward to a preceding ᆯ.
 영업용===영업뇽
 식용유===식용뉴
 국민윤리===국민뉸리
@@ -98,12 +138,17 @@
 먹을엿===먹을렷
 
 # rule:29.exception
+# Rule 29 exceptions — words that superficially match ᄂ/ᄅ-insertion conditions
+# but are pronounced differently by convention. Add lexical exceptions here.
 6·25===유기오
 3·1절===사밀쩔
 송별연===송벼련
 등용문===등용문
 
 # rule:30.1
+# Rule 30 사이시옷 — Tensification: compound nouns written with ㅅ (사이시옷) where
+# the second element starts with a plain stop/fricative that becomes tensed.
+# Add saisiot-spelled compound nouns where the following onset tenses.
 냇가===내까
 샛길===새낄
 빨랫돌===빨래똘
@@ -116,36 +161,33 @@
 고갯짓===고개찟
 
 # rule:30.2
+# Rule 30 사이시옷 — Nasalization: saisiot + ᄂ/ᄆ onset triggers ᄂ insertion before
+# the nasal. Add saisiot-spelled compound nouns whose second element starts with ᄂ or ᄆ.
 콧날===콘날
 아랫니===아랜니
 툇마루===퇸마루
 뱃머리===밴머리
 
 # rule:30.3
+# Rule 30 사이시옷 — ᄂᄂ insertion: saisiot + vowel-initial second element.
+# Add saisiot-spelled compound nouns whose second element starts with a vowel;
+# the saisiot triggers insertion of ᄂ before the vowel (and ᄂ-nasalization of
+# any preceding coda).
 베갯잇===베갠닛
 깻잎===깬닢
 나뭇잎===나문닢
 도리깻열===도리깬녈
 뒷윷===뒨늋
 
-# rule:27
-할걸===할껄
-할밖에===할빠께
-할세라===할쎄라
-할수록===할쑤록
-할지라도===할찌라도
-할지언정===할찌언정
-할진대===할찐대
-
 # rule:no_rule_only_memorise
+# No phonological rule — fixed-form substitutions learned by rote.
+# Add: (1) abbreviations/symbols with fixed readings,
+#      (2) irregular number/counter readings,
+#      (3) anything that does not fit any rule above.
 ml===밀리리터
 mp3===엠피쓰리
 %===퍼센트
 jpeg===제이펙
 mp4===엠피포
-
-# rule:no_rule_only_memorise
 1번째===첫번째
 10월===시월
-
-

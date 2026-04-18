@@ -207,6 +207,33 @@ def annotate(string, mecab):
         if _qualifies(*tokens[i_tok + 1]) and len(h2j(string[tok_end])) >= 3:
             c_positions.add(tok_end)
 
+    # Also mark compound-internal boundaries. mecab.pos() returns a compound as one
+    # token, hiding the internal morpheme boundary. mecab.parse() exposes it via
+    # feature.expression (e.g. '젖/NNG/*+어미/NNG/*'), so we scan each compound and
+    # add /C at the end of each part whose following part is a qualifying content morpheme.
+    cursor = 0
+    for morph in mecab.parse(string):
+        pos = string.find(morph.surface, cursor)
+        if pos == -1:
+            continue
+        cursor = pos + len(morph.surface)
+        if morph.feature.type != 'Compound':
+            continue
+        expression = morph.feature.expression
+        if not expression or '+' not in expression:
+            continue
+        parts = expression.split('+')
+        char_offset = pos
+        for i_part, part_str in enumerate(parts[:-1]):
+            surf = part_str.split('/')[0]
+            next_str = parts[i_part + 1]
+            next_surf = next_str.split('/')[0]
+            next_pos_tag = next_str.split('/')[1] if len(next_str.split('/')) > 1 else 'X'
+            surf_end = char_offset + len(surf) - 1
+            if _qualifies(next_surf, next_pos_tag) and len(h2j(string[surf_end])) >= 3:
+                c_positions.add(surf_end)
+            char_offset += len(surf)
+
     annotated = ""
     for i, (char, tag) in enumerate(zip(string, tag_seq)):
         annotated += char
