@@ -234,6 +234,7 @@ def test_rule_14_complex_liaison(g2p, inp, expected):
     ("밭 아래", "바 다래"),
     ("젖어미", "저더미"),
     ("헛웃음", "허두슴"),
+    ("값 있다", "가 빋따"),   # double coda ᆹ(ᆸ+ᆺ) → neutralizes to ᆸ → liaisons as ᄇ
 ])
 def test_rule_15_content_liaison(g2p, inp, expected):
     out, rules, _ = g2p(inp, verbose=True)
