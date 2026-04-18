@@ -164,28 +164,26 @@ def annotate(string, mecab):
     '''attach pos tags to the given string using Mecab
     mecab: mecab object
     '''
-    tokens = mecab.pos(string)
-    if string.replace(" ", "") != "".join(token for token, _ in tokens):
+    morphs = list(mecab.parse(string))
+    if string.replace(" ", "") != "".join(m.surface for m in morphs):
         return string
+
     blanks = [i for i, char in enumerate(string) if char == " "]
 
+    # Build character-level POS tag sequence from parse results
     tag_seq = []
-    for token, tag in tokens:
-        tag = tag.split("+")[-1]
-        if tag=="NNBC": # bound noun
+    for morph in morphs:
+        tag = morph.feature.pos.split("+")[-1]
+        if tag == "NNBC":
             tag = "B"
         else:
             tag = tag[0]
-        tag_seq.append("_" * (len(token) - 1) + tag)
+        tag_seq.append("_" * (len(morph.surface) - 1) + tag)
     tag_seq = "".join(tag_seq)
 
     for i in blanks:
         tag_seq = tag_seq[:i] + " " + tag_seq[i:]
 
-    # Rule 15 /C markers: for each token boundary where the next token is a content
-    # morpheme (실질형태소) starting with null onset ᄋ + rule-15 vowel (ᅡᅥᅩᅮᅱ),
-    # record the last character position of the current token. Works for both
-    # cross-space (꽃 위) and intra-word (맛없다) boundaries uniformly.
     _RULE15_VOWELS = frozenset('\u1161\u1165\u1169\u116e\u1171')
     _CONTENT_POS = frozenset('NVMI')
 
@@ -197,55 +195,51 @@ def annotate(string, mecab):
         jamo = h2j(tok[0])
         return len(jamo) >= 2 and jamo[0] == '\u110b' and jamo[1] in _RULE15_VOWELS
 
+    # Single pass: collect /C positions for both cross-word and compound-internal
+    # boundaries using the one parse result.
     c_positions = set()
-    str_pos = 0
-    for i_tok, (token, _) in enumerate(tokens[:-1]):
-        while string[str_pos] == ' ':
-            str_pos += 1
-        tok_end = str_pos + len(token) - 1
-        str_pos += len(token)
-        if _qualifies(*tokens[i_tok + 1]) and len(h2j(string[tok_end])) >= 3:
-            c_positions.add(tok_end)
-
-    # Also mark compound-internal boundaries. mecab.pos() returns a compound as one
-    # token, hiding the internal morpheme boundary. mecab.parse() exposes it via
-    # feature.expression (e.g. '젖/NNG/*+어미/NNG/*'), so we scan each compound and
-    # add /C at the end of each part whose following part is a qualifying content morpheme.
     cursor = 0
-    for morph in mecab.parse(string):
+    for i_morph, morph in enumerate(morphs):
         pos = string.find(morph.surface, cursor)
         if pos == -1:
             continue
         cursor = pos + len(morph.surface)
-        if morph.feature.type != 'Compound':
-            continue
-        expression = morph.feature.expression
-        if not expression or '+' not in expression:
-            continue
-        parts = expression.split('+')
-        char_offset = pos
-        for i_part, part_str in enumerate(parts[:-1]):
-            surf = part_str.split('/')[0]
-            next_str = parts[i_part + 1]
-            next_surf = next_str.split('/')[0]
-            next_pos_tag = next_str.split('/')[1] if len(next_str.split('/')) > 1 else 'X'
-            surf_end = char_offset + len(surf) - 1
-            if _qualifies(next_surf, next_pos_tag) and len(h2j(string[surf_end])) >= 3:
-                c_positions.add(surf_end)
-            char_offset += len(surf)
+        tok_end = pos + len(morph.surface) - 1
+
+        # Cross-word boundary: next token is a qualifying content morpheme
+        if i_morph < len(morphs) - 1:
+            next_morph = morphs[i_morph + 1]
+            if _qualifies(next_morph.surface, next_morph.feature.pos) and len(h2j(string[tok_end])) >= 3:
+                c_positions.add(tok_end)
+
+        # Compound-internal boundary: scan expression parts for qualifying transitions
+        if morph.feature.type == 'Compound':
+            expression = morph.feature.expression
+            if expression and '+' in expression:
+                parts = expression.split('+')
+                char_offset = pos
+                for i_part, part_str in enumerate(parts[:-1]):
+                    surf = part_str.split('/')[0]
+                    next_str = parts[i_part + 1]
+                    next_surf = next_str.split('/')[0]
+                    next_pos_tag = next_str.split('/')[1] if len(next_str.split('/')) > 1 else 'X'
+                    surf_end = char_offset + len(surf) - 1
+                    if _qualifies(next_surf, next_pos_tag) and len(h2j(string[surf_end])) >= 3:
+                        c_positions.add(surf_end)
+                    char_offset += len(surf)
 
     annotated = ""
     for i, (char, tag) in enumerate(zip(string, tag_seq)):
         annotated += char
         if char == "의" and tag == "J":
             annotated += "/J"
-        elif tag=="E":
+        elif tag == "E":
             if h2j(char)[-1] in "ᆯ":
                 annotated += "/E"
         elif tag == "V":
             if h2j(char)[-1] in "ᆫᆬᆷᆱᆰᆲᆴ":
                 annotated += "/P"
-        elif tag == "B": # bound noun
+        elif tag == "B":
             annotated += "/B"
         if i in c_positions:
             annotated += "/C"

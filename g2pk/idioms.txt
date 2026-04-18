@@ -17,7 +17,7 @@
 # morpheme, causing incorrect direct liaison (Rule 13) instead of the correct
 # neutralize-then-liaise (Rule 15).
 # Example: 맛없다 — 맛(ᆺ)+없 → ᆺ neutralizes to ᆮ → ᄃ liaison → [마덥따]
-맛없===마덥
+맛없===마덦
 
 # rule:20
 # Rule 20 — Sino-Korean ㄹ initial syllable → ㄴ after ᆫ·ᆯ coda (두음법칙 in compounds).
