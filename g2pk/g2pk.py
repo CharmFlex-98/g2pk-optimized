@@ -128,9 +128,9 @@ class G2p(object):
         # 6. special
         for func in (jyeo, ye, consonant_ui, josa_ui, vowel_ui, \
                      jamo, rieulgiyeok, rieulbieub, verb_nieun, \
-                     balb, palatalize, modifying_rieul):
+                     balb, palatalize, modifying_rieul, link3):
             inp = func(inp, descriptive, verbose, applied_rules)
-        inp = re.sub("/[PJEB]", "", inp)
+        inp = re.sub("/[PJEBC]", "", inp)
 
         # 7. regular table: batchim + onset (iterate until stable)
         max_passes = 10
@@ -147,7 +147,7 @@ class G2p(object):
                         gloss(verbose, inp, _inp, rule_id, applied_rules)
 
         # 8 link
-        for func in (link1, link2, link3, link4):
+        for func in (link1, link2, link4):
             inp = func(inp, descriptive, verbose, applied_rules)
 
         # 9. postprocessing
