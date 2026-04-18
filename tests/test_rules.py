@@ -77,6 +77,16 @@ def test_rule_5_4_1_vowel_ui_descriptive(g2p, inp, expected):
     out, rules, _ = g2p(inp, descriptive=True, verbose=True)
     assert out == expected, f"Expected '{expected}', got '{out}'"
     assert "5.4.1" in rule_ids(rules)
+
+
+# ── Rule 5.4.2 ───────────────────────────────────────────────────────────────
+@pytest.mark.parametrize("inp, expected", [
+    ("우리의", "우리에"),
+])
+def test_rule_5_4_2_vowel_ui_descriptive(g2p, inp, expected):
+    out, rules, _ = g2p(inp, descriptive=True, verbose=True)
+    assert out == expected, f"Expected '{expected}', got '{out}'"
+    assert "5.4.2" in rule_ids(rules)
  
  
 # ── Rule 9 ───────────────────────────────────────────────────────────────────
@@ -221,6 +231,9 @@ def test_rule_14_complex_liaison(g2p, inp, expected):
  
 @pytest.mark.parametrize("inp, expected", [
     ("맛없다", "마덥따"),
+    ("밭 이래", "바 다래"),
+    ("젖어미", "저더미"),
+    ("헛웃음", "허두슴"),
 ])
 def test_rule_15_content_liaison(g2p, inp, expected):
     out, rules, _ = g2p(inp, verbose=True)
