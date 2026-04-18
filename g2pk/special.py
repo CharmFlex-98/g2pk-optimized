@@ -91,21 +91,24 @@ def rieulbieub(inp, descriptive=False, verbose=False, applied_rules=None):
 def verb_nieun(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
 
-    pairs = [ ("([ᆫᆷ])/Pᄀ", r"\1ᄁ"),
-              ("([ᆫᆷ])/Pᄃ", r"\1ᄄ"),
-              ("([ᆫᆷ])/Pᄉ", r"\1ᄊ"),
-              ("([ᆫᆷ])/Pᄌ", r"\1ᄍ"),
+    pairs = [
+        ("([ᆫᆷ])/Pᄀ", r"\1ᄁ"),
+        ("([ᆫᆷ])/Pᄃ", r"\1ᄄ"),
+        ("([ᆫᆷ])/Pᄉ", r"\1ᄊ"),
+        ("([ᆫᆷ])/Pᄌ", r"\1ᄍ"),
 
-              ("ᆬ/Pᄀ", "ᆫᄁ"),
-              ("ᆬ/Pᄃ", "ᆫᄄ"),
-              ("ᆬ/Pᄉ", "ᆫᄊ"),
-              ("ᆬ/Pᄌ", "ᆫᄍ"),
+        # IMPORTANT: cluster forms are treated SAME as ㄴ/ㅁ here
+        ("ᆬ/Pᄀ", "ᆬᄁ"),
+        ("ᆬ/Pᄃ", "ᆬᄄ"),
+        ("ᆬ/Pᄉ", "ᆬᄊ"),
+        ("ᆬ/Pᄌ", "ᆬᄍ"),
 
-              ("ᆱ/Pᄀ", "ᆷᄁ"),
-              ("ᆱ/Pᄃ", "ᆷᄄ"),
-              ("ᆱ/Pᄉ", "ᆷᄊ"),
-              ("ᆱ/Pᄌ", "ᆷᄍ")  ]
-
+        ("ᆱ/Pᄀ", "ᆱᄁ"),
+        ("ᆱ/Pᄃ", "ᆱᄄ"),
+        ("ᆱ/Pᄉ", "ᆱᄊ"),
+        ("ᆱ/Pᄌ", "ᆱᄍ"),
+    ]
+    
     for str1, str2 in pairs:
         out = re.sub(str1, str2, out)
 
