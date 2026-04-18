@@ -9,7 +9,7 @@
 #   4. If no rule applies, add to # rule:no_rule_only_memorise at the bottom.
 # ─────────────────────────────────────────────────────────────────────────────
 
-# rule:15.lexical
+# rule:15
 # Rule 15 — Liaison before content morphemes (실질형태소) — lexical exceptions.
 # MeCab treats some lexicalized compound predicates as a single token, hiding the
 # internal morpheme boundary. Add words here where the first morpheme ends in a
@@ -86,7 +86,7 @@
 창살===창쌀
 강줄기===강쭐기
 
-# rule:29.nieun
+# rule:29
 # Rule 29 — ᄂ insertion: first morpheme ends in a consonant, second starts with
 # 이/야/여/요/유 (null onset + yiotized vowel) → ᄂ is inserted between them.
 # Add compound nouns or verb stems that undergo ᄂ insertion.
@@ -103,11 +103,8 @@
 콩엿===콩녓
 담요===담뇨
 눈요기===눈뇨기
-
-# rule:29.rieul
-# Rule 29 붙임1 — ᄅ insertion: same condition as 29.nieun but the first morpheme
-# ends in ᆯ, so the inserted ᄂ assimilates to ᄅ (ᆯ + ᄂ → ᆯ + ᄅ).
-# Also covers cases where ᄂ is inserted then assimilates leftward to a preceding ᆯ.
+# Rule 29 붙임1 — ᄅ insertion: same condition but the first morpheme ends in ᆯ,
+# so the inserted ᄂ assimilates to ᄅ (ᆯ + ᄂ → ᆯ + ᄅ).
 영업용===영업뇽
 식용유===식용뉴
 국민윤리===국민뉸리
