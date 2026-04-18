@@ -90,9 +90,8 @@ def link3(inp, descriptive=False, verbose=False, applied_rules=None):
     ]
     for str1, str2 in pairs:
         out = out.replace(str1, str2)
-    out = out.replace('/C', '')  # clean up unused /C markers
 
-    gloss(verbose, out, inp.replace('/C', ''), "15", applied_rules)
+    gloss(verbose, out, inp, "15", applied_rules)
     return out
 
 
