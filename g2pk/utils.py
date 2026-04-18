@@ -193,7 +193,7 @@ def annotate(string, mecab):
         if pos not in _CONTENT_POS or not tok:
             return False
         jamo = h2j(tok[0])
-        return len(jamo) >= 2 and jamo[0] == '\u110b' and jamo[1] in _RULE15_VOWELS
+        return len(jamo) >= 2 and jamo[0] == '\u110b'
 
     # Single pass: collect /C positions for both cross-word and compound-internal
     # boundaries using the one parse result.
