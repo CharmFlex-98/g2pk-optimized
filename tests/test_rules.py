@@ -231,7 +231,7 @@ def test_rule_14_complex_liaison(g2p, inp, expected):
  
 @pytest.mark.parametrize("inp, expected", [
     ("맛없다", "마덥따"),
-    ("밭 이래", "바 다래"),
+    ("밭 아래", "바 다래"),
     ("젖어미", "저더미"),
     ("헛웃음", "허두슴"),
 ])
