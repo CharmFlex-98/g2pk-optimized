@@ -22,7 +22,7 @@ def ye(inp, descriptive=False, verbose=False, applied_rules=None):
     # 실제로 언중은 예, 녜, 셰, 쎼 이외의 'ㅖ'는 [ㅔ]로 발음한다. by kyubyong
 
     if descriptive:
-        out = re.sub("([ᄀᄁᄃᄄㄹᄆᄇᄈᄌᄍᄎᄏᄐᄑᄒ])ᅨ", r"\1ᅦ", inp)
+        out = re.sub("([ᄀᄁᄃᄄᄅᄆᄇᄈᄌᄍᄎᄏᄐᄑᄒ])ᅨ", r"\1ᅦ", inp)
     else:
         out = inp
     gloss(verbose, out, inp, "5.2", applied_rules)
@@ -38,7 +38,7 @@ def consonant_ui(inp, descriptive=False, verbose=False, applied_rules=None):
 def josa_ui(inp, descriptive=False, verbose=False, applied_rules=None):
     # 실제로 언중은 높은 확률로 조사 '의'는 [ㅔ]로 발음한다.
     if descriptive:
-        out = re.sub("의/J", "에", inp)
+        out = re.sub("의/J", "에", inp)
     else:
         out = inp.replace("/J", "")
     gloss(verbose, out, inp, "5.4.2", applied_rules)
@@ -58,10 +58,10 @@ def vowel_ui(inp, descriptive=False, verbose=False, applied_rules=None):
 def jamo(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
 
-    out = re.sub("([그])ᆮᄋ", r"\1ᄉ", out)
-    out = re.sub("([으])[ᆽᆾᇀᇂ]ᄋ", r"\1ᄉ", out)
-    out = re.sub("([으])[ᆿ]ᄋ", r"\1ᄀ", out)
-    out = re.sub("([으])[ᇁ]ᄋ", r"\1ᄇ", out)
+    out = re.sub("([그])ᆮᄋ", r"\1ᄉ", out)
+    out = re.sub("([으])[ᆽᆾᇀᇂ]ᄋ", r"\1ᄉ", out)
+    out = re.sub("([으])[ᆿ]ᄋ", r"\1ᄀ", out)
+    out = re.sub("([으])[ᇁ]ᄋ", r"\1ᄇ", out)
 
     gloss(verbose, out, inp, "16", applied_rules)
     return out
@@ -70,7 +70,7 @@ def jamo(inp, descriptive=False, verbose=False, applied_rules=None):
     ############################ 어간 받침 ############################
 def rieulgiyeok(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
-    out = re.sub("ᆰ/P([ᄀᄁ])", r"ᆯᄁ", out)
+    out = re.sub("ᆰ/Pᄀ", "ᆯᄁ", out)
 
     gloss(verbose, out, inp, "11.1", applied_rules)
     return out
@@ -115,11 +115,11 @@ def verb_nieun(inp, descriptive=False, verbose=False, applied_rules=None):
 
 def balb(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
-    syllable_final_or_consonants = "($|[^ᄋᄒ])"
+    syllable_final_or_consonants = r"($|[\u1100-\u110a\u110c-\u1111])"
 
     # exceptions
-    out = re.sub(f"(바)ᆲ({syllable_final_or_consonants})", r"\1ᆸ\2", out)
-    out = re.sub(f"(너)ᆲ([ᄌᄍ]ᅮ|[ᄃᄄ]ᅮ)", r"\1ᆸ\2", out)
+    out = re.sub(f"(바)ᆲ({syllable_final_or_consonants})", r"\1ᆸ\2", out)
+    out = re.sub(f"(너)ᆲ([ᄌᄍ]ᅮ|[ᄃᄄ]ᅮ)", r"\1ᆸ\2", out)
     gloss(verbose, out, inp, "10.1", applied_rules)
     return out
 
@@ -127,9 +127,9 @@ def balb(inp, descriptive=False, verbose=False, applied_rules=None):
 def palatalize(inp, descriptive=False, verbose=False, applied_rules=None):
     out = inp
 
-    out = re.sub("ᆮᄋ([ᅵᅧ])", r"ᄌ\1", out)
-    out = re.sub("ᇀᄋ([ᅵᅧ])", r"ᄎ\1", out)
-    out = re.sub("ᆴᄋ([ᅵᅧ])", r"ᆯᄎ\1", out)
+    out = re.sub("ᆮᄋ([ᅵᅣᅧᅭᅲ])", r"ᄌ\1", out)
+    out = re.sub("ᇀᄋ([ᅵᅣᅧᅭᅲ])", r"ᄎ\1", out)
+    out = re.sub("ᆴᄋ([ᅵᅣᅧᅭᅲ])", r"ᆯᄎ\1", out)
 
     out = re.sub("ᆮᄒ([ᅵ])", r"ᄎ\1", out)
 

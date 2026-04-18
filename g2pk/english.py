@@ -17,7 +17,7 @@ def convert_eng(string, cmu, applied_rules=None):
     >>> convert_eng("그 사람 좀 old school이야", cmu)
     그 사람 좀 올드 스쿨이야
     '''
-    eng_words = set(re.findall("[A-Za-z']+", string))
+    eng_words = sorted(set(re.findall("[A-Za-z']+", string)), key=len, reverse=True)
     for eng_word in eng_words:
         word = eng_word.lower()
         if word not in cmu:
@@ -30,7 +30,7 @@ def convert_eng(string, cmu, applied_rules=None):
             p = phonemes[i] # phoneme
             p_prev = phonemes[i - 1] if i > 0 else "^"
             p_next = phonemes[i + 1] if i < len(phonemes) - 1 else "$"
-            p_next2 = phonemes[i + 1] if i < len(phonemes) - 2 else "$"
+            p_next2 = phonemes[i + 2] if i < len(phonemes) - 2 else "$"
 
             # desginated sets
             short_vowels = ("AE", "AH", "AX", "EH", "IH", "IX", "UH")

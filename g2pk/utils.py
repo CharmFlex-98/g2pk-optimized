@@ -182,9 +182,33 @@ def annotate(string, mecab):
     for i in blanks:
         tag_seq = tag_seq[:i] + " " + tag_seq[i:]
 
-    annotated = ""
+    # Rule 15 /C markers: for each token boundary where the next token is a content
+    # morpheme (실질형태소) starting with null onset ᄋ + rule-15 vowel (ᅡᅥᅩᅮᅱ),
+    # record the last character position of the current token. Works for both
+    # cross-space (꽃 위) and intra-word (맛없다) boundaries uniformly.
+    _RULE15_VOWELS = frozenset('\u1161\u1165\u1169\u116e\u1171')
+    _CONTENT_POS = frozenset('NVMI')
 
-    for char, tag in zip(string, tag_seq):
+    def _qualifies(tok, tag_raw):
+        tag = tag_raw.split('+')[-1]
+        pos = 'B' if tag == 'NNBC' else tag[0]
+        if pos not in _CONTENT_POS or not tok:
+            return False
+        jamo = h2j(tok[0])
+        return len(jamo) >= 2 and jamo[0] == '\u110b' and jamo[1] in _RULE15_VOWELS
+
+    c_positions = set()
+    str_pos = 0
+    for i_tok, (token, _) in enumerate(tokens[:-1]):
+        while string[str_pos] == ' ':
+            str_pos += 1
+        tok_end = str_pos + len(token) - 1
+        str_pos += len(token)
+        if _qualifies(*tokens[i_tok + 1]) and len(h2j(string[tok_end])) >= 3:
+            c_positions.add(tok_end)
+
+    annotated = ""
+    for i, (char, tag) in enumerate(zip(string, tag_seq)):
         annotated += char
         if char == "의" and tag == "J":
             annotated += "/J"
@@ -196,6 +220,8 @@ def annotate(string, mecab):
                 annotated += "/P"
         elif tag == "B": # bound noun
             annotated += "/B"
+        if i in c_positions:
+            annotated += "/C"
 
     return annotated
 
