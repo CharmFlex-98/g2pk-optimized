@@ -85,6 +85,7 @@
 등불===등뿔
 창살===창쌀
 강줄기===강쭐기
+학생증===학생쯩
 
 # rule:29
 # Rule 29 — ᄂ insertion: first morpheme ends in a consonant, second starts with
