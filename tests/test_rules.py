@@ -413,8 +413,43 @@ def test_rule_29_n_insertion(g2p, inp, expected):
     out, rules, _ = g2p(inp, verbose=True)
     assert out == expected, f"Expected '{expected}', got '{out}'"
     assert "29" in rule_ids(rules)
- 
- 
+
+
+# ── Rule 29 붙임 2 ────────────────────────────────────────────────────────────
+# ᄂ insertion across whitespace-separated word pairs (두 단어를 이어서 발음)
+
+class _MockMeCab:
+    '''MeCab stub that returns no Compound morphemes — lets the phrase pass run alone.'''
+    def parse(self, _string):
+        return []
+
+@pytest.fixture(scope="module")
+def mock_mecab():
+    return _MockMeCab()
+
+
+@pytest.mark.parametrize("inp, expected", [
+    # 붙임 2 positives — ᄂ insertion
+    ("한 일",   "한 닐"),
+    ("맨 입",   "맨 닙"),
+    ("먹은 엿", "먹은 녓"),
+    # ᄅ insertion (ᆯ-final left word, per 붙임 1)
+    ("할 일",   "할 릴"),
+    ("잘 입다", "잘 립다"),
+    ("먹을 엿", "먹을 렷"),
+    # exceptions — no insertion
+    ("송별연",  "송별연"),
+    ("등용문",  "등용문"),
+    # idempotency — second application is no-op
+    ("한 닐",   "한 닐"),
+    ("할 릴",   "할 릴"),
+])
+def test_rule_29_n_insertion_phrase(mock_mecab, inp, expected):
+    from g2pk.utils import n_insertion
+    result = n_insertion(inp, mock_mecab)
+    assert result == expected, f"Expected '{expected}', got '{result}'"
+
+
 # ── Rule 30.1 ────────────────────────────────────────────────────────────────
 # 사이시옷 + plain obstruent → tensed
  

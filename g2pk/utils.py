@@ -354,26 +354,43 @@ def gloss(verbose, out, inp, rule_id, applied_rules=None):
 
 
 _N_INSERTION_EXCEPTIONS = frozenset({'6·25', '3·1절', '송별연', '등용문'})
-_YIOTIZED_VOWELS = frozenset({'\u1175', '\u1163', '\u1167', '\u116d', '\u1172'})  # ᅵᅣᅧᅭᅲ
-_JONGSEONG_START = '\u11a8'  # ᆨ
-_JONGSEONG_END = '\u11c2'    # ᇂ
-_NULL_ONSET = '\u110b'       # ᄋ
-_RIEUL_JONGSEONG = '\u11af'  # ᆯ
-_NIEUN_ONSET = '\u1102'      # ᄂ
-_RIEUL_ONSET = '\u1105'      # ᄅ
+_N_INSERTION_PHRASE_EXCEPTIONS = frozenset({'송별 연', '등용 문'})
+_YIOTIZED_VOWELS = frozenset({'ᅵ', 'ᅣ', 'ᅧ', 'ᅭ', 'ᅲ'})  # ᅵᅣᅧᅭᅲ
+_JONGSEONG_START = 'ᆨ'  # ᆨ
+_JONGSEONG_END = 'ᇂ'    # ᇂ
+_NULL_ONSET = 'ᄋ'       # ᄋ
+_RIEUL_JONGSEONG = 'ᆯ'  # ᆯ
+_NIEUN_ONSET = 'ᄂ'      # ᄂ
+_RIEUL_ONSET = 'ᄅ'      # ᄅ
+
+
+def _apply_n_insertion_at_boundary(left_surf, right_surf):
+    '''Returns modified right_surf with ᄋ replaced by ᄂ/ᄅ, or None if not applicable.'''
+    left_jamo = h2j(left_surf)
+    right_jamo = h2j(right_surf)
+    if not left_jamo or len(right_jamo) < 2:
+        return None
+    last = left_jamo[-1]
+    if not (_JONGSEONG_START <= last <= _JONGSEONG_END):
+        return None
+    if right_jamo[0] != _NULL_ONSET:
+        return None
+    if right_jamo[1] not in _YIOTIZED_VOWELS:
+        return None
+    new_onset = _RIEUL_ONSET if last == _RIEUL_JONGSEONG else _NIEUN_ONSET
+    return compose(new_onset + right_jamo[1:])
 
 
 def n_insertion(string, mecab_inst, verbose=False, applied_rules=None):
-    '''Rule 29: ᄂ insertion at compound boundaries.
-    Runs on the surface string before h2j decomposition.
-    When first morpheme ends in a consonant and second starts with 이/야/여/요/유,
-    insert ᄂ (or ᄅ for ᆯ-final first morpheme, per 붙임1).
+    '''Rule 29: ᄂ insertion at compound and phrase boundaries.
+    When first morpheme/word ends in a consonant and second starts with 이/야/여/요/유,
+    insert ᄂ (or ᄅ for ᆯ-final, per 붙임1). Handles both MeCab Compound tokens
+    and whitespace-separated word pairs (붙임2).
     '''
     out = string
-    # cursor tracks position in the original string; since ᄋ→ᄂ/ᄅ never changes
-    # syllable count, positions in `out` stay aligned with `string` throughout.
     cursor = 0
 
+    # Compound pass (existing behaviour)
     for morph in mecab_inst.parse(string):
         pos = string.find(morph.surface, cursor)
         if pos == -1:
@@ -392,30 +409,39 @@ def n_insertion(string, mecab_inst, verbose=False, applied_rules=None):
         first_surf = parts[0].split('/')[0]
         second_surf = parts[1].split('/')[0]
 
-        first_jamo = h2j(first_surf)
-        second_jamo = h2j(second_surf)
-
-        if not first_jamo or len(second_jamo) < 2:
+        new_second = _apply_n_insertion_at_boundary(first_surf, second_surf)
+        if new_second is None:
             continue
 
-        last_char = first_jamo[-1]
-        if not (_JONGSEONG_START <= last_char <= _JONGSEONG_END):
-            continue
-
-        if second_jamo[0] != _NULL_ONSET:
-            continue
-        if second_jamo[1] not in _YIOTIZED_VOWELS:
-            continue
-
-        new_onset = _RIEUL_ONSET if last_char == _RIEUL_JONGSEONG else _NIEUN_ONSET
-        new_jamo = first_jamo + new_onset + second_jamo[1:]
-        new_surf = compose(new_jamo)
-
-        # Replace at exact position (len(new_surf) == len(morph.surface) always)
+        new_surf = compose(h2j(first_surf) + h2j(new_second))
         out = out[:pos] + new_surf + out[pos + len(morph.surface):]
+
+    # 붙임 2 pass: whitespace-separated word pairs
+    segments = [(m.group(), not m.group()[0].isspace())
+                for m in re.finditer(r'\S+|\s+', out)]
+    # segments: list of (text, is_word)
+    words = [(i, text) for i, (text, is_word) in enumerate(segments) if is_word]
+
+    rebuilt = [text for text, _ in segments]
+    for k in range(len(words) - 1):
+        i, left = words[k]
+        j, right = words[k + 1]
+        if left in _N_INSERTION_EXCEPTIONS or right in _N_INSERTION_EXCEPTIONS:
+            continue
+        phrase = left + ' ' + right
+        if phrase in _N_INSERTION_PHRASE_EXCEPTIONS:
+            continue
+        new_right = _apply_n_insertion_at_boundary(left, right)
+        if new_right is None:
+            continue
+        rebuilt[j] = new_right
+        words[k + 1] = (j, new_right)
+
+    out = ''.join(rebuilt)
 
     gloss(verbose, out, string, "29", applied_rules)
     return out
+
 
 
 def getCompoundToken(string, mecab):
